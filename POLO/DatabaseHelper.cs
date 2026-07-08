@@ -3,32 +3,27 @@ using System.Data.SqlClient;
 
 namespace HockeyHorseGame
 {
-    // ======================================================================
-    //  DatabaseHelper  —  handles all SQL Server operations for POLO game
+    // DatabaseHelper handles all SQL Server operations for the POLO game.
     //
-    //  USAGE:
-    //    1. Set your server name in CONNECTION_STRING below
-    //    2. Call DatabaseHelper.InsertMatch(...)  when a match starts
-    //    3. Call DatabaseHelper.InsertRound(...)  when a round ends
-    //    4. Call DatabaseHelper.InsertGoal(...)   when a goal is scored
-    //    5. Call DatabaseHelper.SavePlayerStats(...) when the game ends
-    // ======================================================================
+    // Usage:
+    //   1. Set your server name in CONNECTION_STRING below
+    //   2. Call DatabaseHelper.InsertMatch(...) when a match starts
+    //   3. Call DatabaseHelper.InsertRound(...) when a round ends
+    //   4. Call DatabaseHelper.InsertGoal(...) when a goal is scored
+    //   5. Call DatabaseHelper.SavePlayerStats(...) when the game ends
 
     static class DatabaseHelper
     {
-        // ── CONNECTION STRING ────────────────────────────────────────────
-
+        // Connection string for the local SQL Server instance
         private const string CONNECTION_STRING =
             "Server=abdulrehman\\SQLEXPRESS;" +
             "Database=POLOGAME_DB;" +
             "Integrated Security=True;" +
             "TrustServerCertificate=True;";
 
-        // ================================================================
-        //  USERS
-        //  Call this at game startup to get or create a user
-        //  Returns the user_id from the database
-        // ================================================================
+        // Users
+        // Call this at game startup to get or create a user.
+        // Returns the user_id from the database.
         public static int GetOrCreateUser(string username)
         {
             try
@@ -90,10 +85,8 @@ namespace HockeyHorseGame
             catch (Exception ex) { LogError("UpdateLastPlayed", ex); }
         }
 
-        // ================================================================
-        //  MATCHES
-        //  Call this in StartGame() — returns the new match_id
-        // ================================================================
+        // Matches
+        // Call this in StartGame() — returns the new match_id
         public static int InsertMatch(int userId, string difficulty, int totalRounds)
         {
             try
@@ -122,10 +115,8 @@ namespace HockeyHorseGame
             }
         }
 
-        // ================================================================
-        //  UPDATE ROUND
-        //  Call this in EndRound() to fill in final scores and duration
-        // ================================================================
+        // Update round
+        // Call this in EndRound() to fill in final scores and duration
         public static void UpdateRound(int roundId, int blueGoals, int redGoals,
                                        string winnerTeam, int durationSeconds)
         {
@@ -176,10 +167,8 @@ namespace HockeyHorseGame
             catch (Exception ex) { LogError("UpdateMatchWinner", ex); }
         }
 
-        // ================================================================
-        //  ROUNDS
-        //  Call this in EndRound() — returns the new round_id
-        // ================================================================
+        // Rounds
+        // Call this in EndRound() — returns the new round_id
         public static int InsertRound(int matchId, int roundNumber,
                                       int blueGoals, int redGoals,
                                       string winnerTeam, int durationSeconds)
@@ -215,10 +204,8 @@ namespace HockeyHorseGame
             }
         }
 
-        // ================================================================
-        //  GOAL LOG
-        //  Call this in CheckGoals() every time a goal happens
-        // ================================================================
+        // Goal log
+        // Call this in CheckGoals() every time a goal happens
         public static void InsertGoal(int roundId, string scoringTeam,
                                       string playerName, string playerRole,
                                       int goalMinute)
@@ -248,10 +235,8 @@ namespace HockeyHorseGame
             catch (Exception ex) { LogError("InsertGoal", ex); }
         }
 
-        // ================================================================
-        //  PLAYER STATS
-        //  Call this in GameOver — updates cumulative stats for each player
-        // ================================================================
+        // Player stats
+        // Call this in GameOver — updates cumulative stats for each player
         public static void SavePlayerStats(int userId, string playerName,
                                            string playerRole, int goalsThisMatch,
                                            int hitsThisMatch)
@@ -317,9 +302,7 @@ namespace HockeyHorseGame
             catch (Exception ex) { LogError("SavePlayerStats", ex); }
         }
 
-        // ================================================================
-        //  ERROR LOGGING  —  shows a message box if something goes wrong
-        // ================================================================
+        // Error logging — shows a message box if something goes wrong
         static void LogError(string method, Exception ex)
         {
             System.Windows.Forms.MessageBox.Show(
