@@ -4,9 +4,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
-// ======================================================================
 //  HORSE HOCKEY  -  2 Teams x 4 Players  -  .NET Framework 4.8
-//
 //  CONTROLS
 //  Tab          = Switch active player
 //  Arrow Keys   = Move active player
@@ -14,10 +12,10 @@ using System.Windows.Forms;
 //  P            = Pause / Resume
 //  Esc          = Back to menu (from pause)
 //  R            = Restart (game-over screen)
-// ======================================================================
+
 namespace HockeyHorseGame
 {
-    // ─────────────────────────── ENTRY POINT ───────────────────────────
+    //ENTRY POINT
     static class Program
     {
         [STAThread]
@@ -29,13 +27,13 @@ namespace HockeyHorseGame
         }
     }
 
-    // ─────────────────────────── ENUMS ─────────────────────────────────
+    //ENUMS
     enum Team { Blue, Red }
     enum Role { Defender, Scorer, Captain, Helper }
     enum Difficulty { Low, Medium, Hard }
     enum GameState { Menu, Playing, Paused, RoundOver, GameOver, Practice }
 
-    // ─────────────────────────── PLAYER CLASS ──────────────────────────
+    //PLAYER CLASS
     class Player
     {
         public float X, Y, VX, VY;
@@ -53,7 +51,7 @@ namespace HockeyHorseGame
         public int HitsThisMatch = 0;
     }
 
-    // ─────────────────────────── BALL CLASS ────────────────────────────
+    //BALL CLASS
     class Ball
     {
         public float X, Y, VX, VY;
@@ -61,7 +59,7 @@ namespace HockeyHorseGame
         public const float Friction = 0.984f;
     }
 
-    // ─────────────────────────── PARTICLE ──────────────────────────────
+    //PARTICLE
     class Particle
     {
         public float X, Y, VX, VY, Size, Alpha;
@@ -104,7 +102,7 @@ namespace HockeyHorseGame
 
         Player lastHitPlayer = null;
 
-        // ── State ───────────────────────────────────────────────────────
+        //State
         GameState state = GameState.Menu;
         Difficulty aiLevel = Difficulty.Medium;
         int maxRounds = 3;
@@ -117,24 +115,24 @@ namespace HockeyHorseGame
         string roundResultMsg = "";
         int roundResultTimer = 0;
 
-        // ── Players ─────────────────────────────────────────────────────
+        //Players
         List<Player> bluePlayers = new List<Player>();
         List<Player> redPlayers = new List<Player>();
         int activeBlueIndex = 0;  // which blue player human controls
 
-        // ── Ball ────────────────────────────────────────────────────────
+        //Ball
         Ball ball = new Ball();
 
-        // ── Input ───────────────────────────────────────────────────────
+        //Input
         bool keyLeft, keyRight, keyUp, keyDown, keyHit;
 
-        // ── Misc ────────────────────────────────────────────────────────
+        //Misc
         Timer gTimer = new Timer();
         Random rng = new Random();
         List<Particle> parts = new List<Particle>();
         int menuSel = 1; // 0=Low 1=Medium 2=Hard
 
-        // ── Practice Mode ─────────────────────────────────────────────
+        //Practice Mode
         // menuMode: 0=difficulty rows, 1=mode selection (Practice/Play)
         int menuMode = 0;
         bool practiceActive = false;
@@ -150,10 +148,10 @@ namespace HockeyHorseGame
         bool taskDone = false;  // user completed the step objective
         int taskDoneTimer = 0;
 
-        // ── AI tuning per difficulty ─────────────────────────────────────
+        //AI tuning per difficulty
         float aiSpeed, aiHitRange, aiReactTicks;
 
-        // ── Stadium crowd ─────────────────────────────────────────────────
+        //Stadium crowd 
         struct Fan
         {
             public float X, Y, BobPhase, BobSpeed;
@@ -169,7 +167,6 @@ namespace HockeyHorseGame
 
 
 
-        // ================================================================
         public GameForm()
         {
             Text = "Horse Hockey  -  2 vs 2... 4 vs 4!";
@@ -200,9 +197,7 @@ namespace HockeyHorseGame
             currentUserId = DatabaseHelper.GetOrCreateUser(username);
         }
 
-        // ================================================================
         //  TICK
-        // ================================================================
         void OnTick(object sender, EventArgs e)
         {
             if (state == GameState.Playing)
@@ -225,9 +220,8 @@ namespace HockeyHorseGame
             Invalidate();
         }
 
-        // ================================================================
+
         //  INIT
-        // ================================================================
         void SetAITuning()
         {
             switch (aiLevel)
@@ -241,9 +235,8 @@ namespace HockeyHorseGame
             }
         }
 
-        // ================================================================
+    
         //  PRACTICE MODE
-        // ================================================================
         void StartPractice()
         {
             SetAITuning();
@@ -335,7 +328,6 @@ namespace HockeyHorseGame
             }
         }
 
-        // ================================================================
         void StartGame()
         {
             SetAITuning();
@@ -347,7 +339,7 @@ namespace HockeyHorseGame
             redGoals = 0;
             BuildTeams();
 
-            // ── DB: insert match, store returned match_id ────────────────
+            //DB: insert match, store returned match_id 
             currentMatchId = DatabaseHelper.InsertMatch(
                 currentUserId,
                 aiLevel.ToString(),   // "Low" / "Medium" / "Hard"
@@ -437,7 +429,7 @@ namespace HockeyHorseGame
             lastHitPlayer = null;
             goalJustScored = false;
 
-            // ── DB: create round row now so goals can reference it ───────
+            //DB: create round row now so goals can reference it
             currentRoundId = DatabaseHelper.InsertRound(
                 currentMatchId, currentRound,
                 0, 0, "draw", 0);   // placeholder values, updated at EndRound
@@ -484,9 +476,7 @@ namespace HockeyHorseGame
                 bluePlayers[i].IsActive = (i == activeBlueIndex);
         }
 
-        // ================================================================
         //  GAME UPDATE
-        // ================================================================
         void GameUpdate()
         {
             HandlePlayerInput();
@@ -506,7 +496,7 @@ namespace HockeyHorseGame
             UpdateCrowd();
         }
 
-        // ── Human input ─────────────────────────────────────────────────
+        //Human input
         void HandlePlayerInput()
         {
             Player active = bluePlayers[activeBlueIndex];
@@ -525,7 +515,7 @@ namespace HockeyHorseGame
             }
         }
 
-        // ── AI logic ─────────────────────────────────────────────────────
+        //AI logic
         void RunAI(Player p, Team myTeam)
         {
             p.AIThinkTimer--;
@@ -612,7 +602,7 @@ namespace HockeyHorseGame
             }
         }
 
-        // ── Physics ──────────────────────────────────────────────────────
+        //Physics
         void UpdateAllPlayers()
         {
             List<Player> all = new List<Player>(bluePlayers);
@@ -685,7 +675,7 @@ namespace HockeyHorseGame
                 ball.VY += dy / d * power;
                 SpawnHit(ball.X, ball.Y, p.JerseyColor);
 
-                // ── Track last hitter and increment hit count ────────────
+                //Track last hitter and increment hit count
                 if (p.Side == Team.Blue)
                 {
                     lastHitPlayer = p;
@@ -707,7 +697,7 @@ namespace HockeyHorseGame
                 redGoals++;
                 SpawnGoal();
 
-                // ── DB: log this goal ────────────────────────────────────
+                //DB: log this goal
                 int minuteScored = (roundSeconds - timeLeft) / 60;
                 DatabaseHelper.InsertGoal(
                     currentRoundId, "red", null, null, minuteScored);
@@ -722,7 +712,7 @@ namespace HockeyHorseGame
                 blueGoals++;
                 SpawnGoal();
 
-                // ── DB: log this goal with last player who hit the ball ──
+                //DB: log this goal with last player who hit the ball
                 int minuteScored = (roundSeconds - timeLeft) / 60;
                 string pName = lastHitPlayer != null ? lastHitPlayer.Name : null;
                 string pRole = lastHitPlayer != null ? lastHitPlayer.Role.ToString() : null;
@@ -758,7 +748,7 @@ namespace HockeyHorseGame
 
             roundResultTimer = 180;
 
-            // ── DB: update round row with final scores and duration ──────
+            //DB: update round row with final scores and duration
             int duration = roundSeconds - timeLeft;
             DatabaseHelper.UpdateRound(
                 currentRoundId,
@@ -775,7 +765,7 @@ namespace HockeyHorseGame
 
             if (maxReached || blueCannotWin || redCannotWin)
             {
-                // ── DB: finalize match winner ────────────────────────────
+                //DB: finalize match winner
                 string matchWinner;
                 if (blueRoundWins > redRoundWins) matchWinner = "blue";
                 else if (redRoundWins > blueRoundWins) matchWinner = "red";
@@ -783,7 +773,7 @@ namespace HockeyHorseGame
 
                 DatabaseHelper.UpdateMatchWinner(currentMatchId, matchWinner);
 
-                // ── DB: save each blue player's cumulative stats ─────────
+                //DB: save each blue player's cumulative stats
                 foreach (Player p in bluePlayers)
                 {
                     DatabaseHelper.SavePlayerStats(
@@ -810,11 +800,9 @@ namespace HockeyHorseGame
                 t.Start();
             }
         }
+        
 
-        // ================================================================
         //  STADIUM CROWD
-        // ================================================================
-
         void BuildCrowd()
         {
             // Fan color palette - mix of both team colors + neutrals
@@ -952,7 +940,7 @@ namespace HockeyHorseGame
         {
             if (fans == null) return;
 
-            // ── Stand backgrounds ──────────────────────────────────────
+            // Stand backgrounds
             // Top stand
             SolidBrush standTop = new SolidBrush(Color.FromArgb(255, 22, 26, 40));
             g.FillRectangle(standTop, 0, 0, W, FT);
@@ -995,20 +983,20 @@ namespace HockeyHorseGame
             DrawPylon(g, FL - 5, FB + 5);
             DrawPylon(g, FR + 5, FB + 5);
 
-            // ── Draw flashlight beams first (behind fans) ──────────────
+            //Draw flashlight beams first (behind fans)
             for (int i = 0; i < fans.Length; i++)
             {
                 if (!fans[i].FlashOn) continue;
                 DrawFlashBeam(g, fans[i]);
             }
 
-            // ── Draw fans ──────────────────────────────────────────────
+            // Draw fans
             for (int i = 0; i < fans.Length; i++)
             {
                 DrawFan(g, fans[i]);
             }
 
-            // ── Stadium edge / fence ───────────────────────────────────
+            // Stadium edge / fence
             Pen fencePen = new Pen(Color.FromArgb(180, 200, 200, 220), 3f);
             g.DrawRectangle(fencePen, FL, FT, FW, FH);
             fencePen.Dispose();
@@ -1174,9 +1162,7 @@ namespace HockeyHorseGame
             adFont.Dispose();
         }
 
-        // ================================================================
         //  PARTICLES
-
         void SpawnBounce(float x, float y)
         { for (int i = 0; i < 4; i++) parts.Add(new Particle(x, y, Color.White, rng, 2.5f)); }
 
@@ -1199,9 +1185,8 @@ namespace HockeyHorseGame
             { parts[i].Update(); if (parts[i].Dead) parts.RemoveAt(i); }
         }
 
-        // ================================================================
+
         //  DRAW
-        // ================================================================
         protected override void OnPaint(PaintEventArgs e)
         {
             Graphics g = e.Graphics;
@@ -1218,7 +1203,7 @@ namespace HockeyHorseGame
             }
         }
 
-        // ── MENU ─────────────────────────────────────────────────────────
+        // MENU
         void DrawMenu(Graphics g)
         {
             SolidBrush bg = new SolidBrush(Color.FromArgb(15, 18, 30));
@@ -1242,7 +1227,7 @@ namespace HockeyHorseGame
 
             if (menuMode == 0)
             {
-                // ── PAGE 1: Mode Selection (Practice or Play) ──────────────
+                //PAGE 1: Mode Selection (Practice or Play)
                 Font mTitle = new Font("Segoe UI", 17f, FontStyle.Bold);
                 DrawShadow(g, "SELECT  GAME  MODE", mTitle, Color.FromArgb(255, 200, 50), W / 2f, 190f, true);
                 mTitle.Dispose();
@@ -1277,7 +1262,7 @@ namespace HockeyHorseGame
             }
             else
             {
-                // ── PAGE 2: Difficulty Selection ────────────────────────────
+                //PAGE 2: Difficulty Selection
                 Font dTitle = new Font("Segoe UI", 16f, FontStyle.Bold);
                 DrawShadow(g, "SELECT  AI  DIFFICULTY", dTitle,
                     Color.FromArgb(255, 200, 50), W / 2f, 195f, true);
@@ -1352,7 +1337,7 @@ namespace HockeyHorseGame
             lf2.Dispose(); lb2.Dispose();
         }
 
-        // ── GAME ─────────────────────────────────────────────────────────
+        //GAME
         void DrawGame(Graphics g)
         {
             SolidBrush bg = new SolidBrush(Color.FromArgb(15, 18, 30));
@@ -1375,7 +1360,7 @@ namespace HockeyHorseGame
                 DrawPracticeOverlay(g);
         }
 
-        // ── Practice overlay ──────────────────────────────────────────────
+        //Practice overlay
         void DrawPracticeOverlay(Graphics g)
         {
             string[] roleNames = { "DEFENDER", "SCORER", "CAPTAIN", "HELPER" };
@@ -1429,7 +1414,7 @@ namespace HockeyHorseGame
             Color roleCol = roleColors[practiceStep];
             int step = practiceStep;
 
-            // ── WAITING panel (before user starts step) ─────────────────
+            //WAITING panel (before user starts step)
             if (practiceWaiting)
             {
                 // Dark overlay at bottom
@@ -1523,7 +1508,7 @@ namespace HockeyHorseGame
             }
             else if (taskDone)
             {
-                // ── COMPLETED banner ────────────────────────────────────
+                //COMPLETED banner
                 SolidBrush ov2 = new SolidBrush(Color.FromArgb(160, 10, 14, 26));
                 g.FillRectangle(ov2, 0, 0, W, H);
                 ov2.Dispose();
@@ -1551,7 +1536,7 @@ namespace HockeyHorseGame
             }
             else
             {
-                // ── IN-PROGRESS mini HUD bar at top ─────────────────────
+                //IN-PROGRESS mini HUD bar at top
                 SolidBrush hudOv = new SolidBrush(Color.FromArgb(200, 10, 14, 26));
                 g.FillRectangle(hudOv, 0, 0, W, 56);
                 hudOv.Dispose();
@@ -1690,7 +1675,7 @@ namespace HockeyHorseGame
             lp.Dispose();
         }
 
-        // ── Draw one player (horse + rider) ──────────────────────────────
+        //Draw one player (horse + rider)
         void DrawPlayer(Graphics g, Player p)
         {
             bool facingRight = (p.Side == Team.Blue);
@@ -1774,10 +1759,10 @@ namespace HockeyHorseGame
 
             body.Dispose();
 
-            // ── Rider ──
+            //Rider
             DrawRider(g, p);
 
-            // ── Hit effect ──
+            //Hit effect
             if (p.IsHitting)
             {
                 float prog = 1f - (float)p.HitTimer / 18f;
@@ -1791,10 +1776,10 @@ namespace HockeyHorseGame
 
             g.ResetTransform();
 
-            // ── Nametag + Role badge ──
+            //Nametag + Role badge
             DrawPlayerLabel(g, p);
 
-            // ── Active ring ──
+            //Active ring
             if (p.IsActive)
             {
                 Pen ring = new Pen(Color.FromArgb(220, 255, 255, 100), 2.5f);
@@ -1879,7 +1864,7 @@ namespace HockeyHorseGame
             lf.Dispose(); lBr.Dispose();
         }
 
-        // ── HUD ──────────────────────────────────────────────────────────
+        //HUD
         void DrawHUD(Graphics g)
         {
             // Top bar
@@ -2000,7 +1985,7 @@ namespace HockeyHorseGame
             }
         }
 
-        // ── Round result banner ───────────────────────────────────────────
+        //Round result banner
         void DrawRoundResult(Graphics g)
         {
             SolidBrush ov = new SolidBrush(Color.FromArgb(160, 0, 0, 0));
@@ -2015,7 +2000,7 @@ namespace HockeyHorseGame
             sf.Dispose();
         }
 
-        // ── Pause overlay ─────────────────────────────────────────────────
+        //Pause overlay
         void DrawPauseOverlay(Graphics g)
         {
             SolidBrush ov = new SolidBrush(Color.FromArgb(170, 0, 0, 0));
@@ -2031,7 +2016,7 @@ namespace HockeyHorseGame
             sf.Dispose();
         }
 
-        // ── Game over screen ──────────────────────────────────────────────
+        //Game over screen
         void DrawGameOver(Graphics g)
         {
             SolidBrush ov = new SolidBrush(Color.FromArgb(190, 0, 0, 0));
@@ -2057,7 +2042,7 @@ namespace HockeyHorseGame
             hf.Dispose();
         }
 
-        // ── Particles ─────────────────────────────────────────────────────
+        //Particles
         void DrawParticles(Graphics g)
         {
             foreach (Particle p in parts)
@@ -2070,7 +2055,7 @@ namespace HockeyHorseGame
             }
         }
 
-        // ── Shadow text helper ─────────────────────────────────────────────
+        //Shadow text helper
         void DrawShadow(Graphics g, string txt, Font f, Color c, float x, float y, bool center = false)
         {
             SolidBrush sh = new SolidBrush(Color.FromArgb(130, 0, 0, 0));
@@ -2082,9 +2067,7 @@ namespace HockeyHorseGame
             sh.Dispose(); br.Dispose();
         }
 
-        // ================================================================
         //  HELPERS
-        // ================================================================
         float PDist(Player p, float tx, float ty)
         {
             float dx = p.X - tx, dy = p.Y - ty;
@@ -2098,12 +2081,10 @@ namespace HockeyHorseGame
             return v;
         }
 
-        // ================================================================
         //  INPUT
-        // ================================================================
         void OnKeyDown(object sender, KeyEventArgs e)
         {
-            // ── MENU INPUT ───────────────────────────────────────────────
+            //MENU INPUT 
             if (state == GameState.Menu)
             {
                 if (menuMode == 0)
@@ -2144,7 +2125,7 @@ namespace HockeyHorseGame
                 return;
             }
 
-            // ── PRACTICE INPUT ───────────────────────────────────────────
+            //PRACTICE INPUT
             if (state == GameState.Practice)
             {
                 // ESC returns to main menu at ANY point during practice
@@ -2189,7 +2170,7 @@ namespace HockeyHorseGame
                 return;
             }
 
-            // ── GAME OVER ────────────────────────────────────────────────
+            //GAME OVER
             if (state == GameState.GameOver)
             {
                 if (e.KeyCode == Keys.R) { menuMode = 0; menuSel = 1; state = GameState.Menu; }
@@ -2197,7 +2178,7 @@ namespace HockeyHorseGame
                 return;
             }
 
-            // ── PAUSED ───────────────────────────────────────────────────
+            //PAUSED
             if (state == GameState.Paused)
             {
                 if (e.KeyCode == Keys.P) state = GameState.Playing;
@@ -2205,7 +2186,7 @@ namespace HockeyHorseGame
                 return;
             }
 
-            // ── PLAYING ──────────────────────────────────────────────────
+            //PLAYING
             if (state == GameState.Playing)
             {
                 switch (e.KeyCode)
