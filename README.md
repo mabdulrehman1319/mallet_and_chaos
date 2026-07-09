@@ -33,6 +33,7 @@ mallet_and_chaos/
         ├── Settings.settings
         └── Settings.Designer.cs
 ```
+
 ## Setup
 
 1. **Clone the repository**
